@@ -30,6 +30,12 @@ climate-fusion ablation is skipped. Always pass `--group-col`, otherwise CV can 
 Tests the edge/gateway confidence gate on 32 PSII-colour + GLCM features (control vs drought).
 Random-split CV only (no group IDs), so it supports the architecture, not the spectral method.
 
+## Dashboard
+    streamlit run dashboard.py
+Live simulated monitor (edge -> gate -> gateway -> EWMA -> action, with noise/gain fault injection),
+interactive confidence-gate explorer, results viewer for results/*.json, and an upload tab for the
+fluorescence .npy files. Live and gate tabs use synthetic spectra (behaviour demo, not results).
+
 ## Run
     pip install -r requirements.txt
     python run_all.py                    # synthetic stand-in data
