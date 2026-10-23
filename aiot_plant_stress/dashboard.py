@@ -115,8 +115,6 @@ s.alpha = st.sidebar.slider("EWMA α (decision smoothing)", 0.05, 1.0, EWMA_ALPH
 st.sidebar.markdown("**Inject sensor problems** (live tab)")
 s.noise = st.sidebar.slider("Added noise (σ, reflectance)", 0.0, 0.03, 0.0, 0.002)
 s.gain = st.sidebar.slider("Gain / contact error (σ)", 0.0, 0.15, 0.0, 0.01)
-st.sidebar.markdown("---")
-st.sidebar.caption("Live + gate tabs use synthetic spectra: they show behaviour, not results for the paper.")
 
 if "order" not in s:
     s.playing = False
@@ -159,7 +157,8 @@ with tab_live:
             st.dataframe(df[[" ", "plant", "true", "smoothed", "conf", "tier", "temp", "hum", "action"]],
                          hide_index=True, width="stretch")
             st.subheader("Smoothed severity over time (expected class, 0 = healthy … 3 = severe)")
-            h = pd.DataFrame(s.hist).pivot_table(index="scan", columns="plant", values="expected_severity")
+            h = (pd.DataFrame(s.hist).pivot_table(index="scan", columns="plant", values="expected_severity")
+                 .sort_index().ffill())                      # carry each plant's last value so lines connect
             st.line_chart(h, height=260)
             with st.expander("Message log (latest 25)"):
                 st.dataframe(pd.DataFrame(s.log[-25:][::-1]), hide_index=True, width="stretch")
