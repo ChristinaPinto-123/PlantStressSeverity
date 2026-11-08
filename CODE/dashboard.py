@@ -120,6 +120,31 @@ if "order" not in s:
     s.playing = False
     reset_stream()
 
+# ----------------------------------------------------------------------------- top: why SNV + LDA on the edge
+st.title("🌿 Edge-cloud plant stress severity classification")
+st.subheader("Why SNV + LDA on the edge, and not XGBoost-style boosting or other classifiers?")
+cmp_path = os.path.join(RES, "edge_comparison.json")
+if os.path.exists(cmp_path):
+    C = json.load(open(cmp_path))
+    cdf = pd.DataFrame(C["rows"]).T
+    cdf = cdf.rename(columns={"macro_f1": "Macro-F1", "mcc": "MCC", "ece": "ECE (lower = better calibrated)",
+                              "gain_0.10": "F1 @ gain error 10%", "contact_0.08": "F1 @ contact tilt 8%",
+                              "noise_0.005": "F1 @ noise 0.005", "size_kb": "Model size (kB)",
+                              "latency_ms_host": "Latency (ms, host PC)"})
+    cdf.index.name = "Pipeline (smooth → [SNV] → 8 bands → classifier)"
+    hi = [n for n in cdf.index if n.startswith("SNV + LDA")]
+    fmt = {c: "{:.3f}" for c in cdf.columns if c not in ("Model size (kB)", "Latency (ms, host PC)")}
+    fmt.update({"Model size (kB)": "{:.1f}", "Latency (ms, host PC)": "{:.2f}"})
+    st.dataframe(cdf.style.format(fmt).apply(lambda r: ["background-color: rgba(46,160,67,0.25)" if r.name in hi else "" for _ in r], axis=1),
+                 width="stretch")
+    st.caption(f"Data: {C['data']}. Protocol: {C['protocol']}. SNV = Standard Normal Variate, a per-scan preprocessing step "
+               "(subtract the scan's mean, divide by its std), so the real comparison is the whole pipeline. "
+               "Gradient boosting here is scikit-learn's, standing in for XGBoost. Latency is measured on a PC, not the ESP32. "
+               "Regenerate with `python compare_edge.py`.")
+else:
+    st.info("Run `python compare_edge.py` to generate results/edge_comparison.json (the comparison table).")
+st.divider()
+
 tab_live, tab_gate, tab_res, tab_fluo = st.tabs(["Live monitor", "Gate explorer", "Experiment results", "Fluorescence data"])
 
 # ----------------------------------------------------------------------------- tab 1: live monitor
